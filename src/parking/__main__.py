@@ -1,79 +1,66 @@
-import sys
-import logging
+from datetime import datetime, timedelta
+from typing import Dict, List
 
-from typing import List, Union, Dict, Text
-
-from parking.domain_types import UserListing, Bid, Heartbeat, AuctionAction
-
-
-def load_auction_instructions(
-    path_to_input_file: Text,
-) -> List[Union[UserListing, Bid, Heartbeat]]:
-    """Reads a file line by line and parses entries based on parking action type
-
-    Parameters
-    ----------
-    path_to_input_file : str
-        the input file containing list of parking instructions
-
-    Returns
-    -------
-    instruction_list: List[Union[UserListing, Bid, Heartbeat]]
-        a parsed list of parking instructions
-    """
-
-    instruction_list = []
-    with open(path_to_input_file, "r") as file:
-        for line in file:
-            try:
-                entry = line.rstrip("\n").split("|")
-                if len(entry) == 1:
-                    instruction_list.append(Heartbeat().parse(entry=entry))
-                elif len(entry) > 1 and AuctionAction(entry[2]) == AuctionAction.SELL:
-                    instruction_list.append(UserListing().parse(entry=entry))
-                elif len(entry) > 1 and AuctionAction(entry[2]) == AuctionAction.BID:
-                    instruction_list.append(Bid().parse(entry=entry))
-                else:
-                    logging.error(f"Unknown transaction format: {entry}, skipping!")
-            except Exception as e:
-                logging.error(f"Invalid transaction format: {entry}, skipping!\nError trace: {e}")
-    return instruction_list
+from parking.domain_types import (
+    VehicleType,
+    FeeInterval,
+    Vehicle,
+    ParkingLot,
+)
 
 
-def process_auctions(path_to_input_file: Text = "input_test_file.txt") -> None:
-    """Calls the load_auction_instructions method and runs the parking service on those instructions
+def create_fee_models() -> Dict[VehicleType, List[FeeInterval]]:
+    mall_fee_intervals = {
+        VehicleType.MOTORCYCLE_SCOOTER: [FeeInterval(0, 1, 10), FeeInterval(1, 24, 10)],
+        VehicleType.CAR_SUV: [FeeInterval(0, 1, 20), FeeInterval(1, 24, 20)],
+        VehicleType.BUS_TRUCK: [FeeInterval(0, 1, 50), FeeInterval(1, 24, 50)],
+    }
+    return mall_fee_intervals
 
-    Parameters
-    ----------
-    path_to_input_file : str
-        the input file containing list of parking instructions
-    """
-    # LOAD auctions up from an input file and sort by Unix-epoch  timestamp
-    auction_actions_by_time_stamp = sorted(
-        load_auction_instructions(path_to_input_file), key=lambda x: x.timestamp  # type: ignore
-    )
 
-    auctions: Dict[Text, UserListing] = {}
+def main() -> None:
+    # Create parking lot
+    spots = {
+        VehicleType.MOTORCYCLE_SCOOTER: 100,
+        VehicleType.CAR_SUV: 80,
+        VehicleType.BUS_TRUCK: 10,
+    }
+    fee_model = create_fee_models()
+    parking_lot = ParkingLot(spots, fee_model)
 
-    for action in auction_actions_by_time_stamp:
-        if isinstance(action, UserListing):
-            if action.item not in auctions:
-                # ADD a new parking
-                auctions[action.item] = action
-        elif isinstance(action, Bid):
-            if action.item not in auctions:
-                logging.error("Skipping bid, parking for item not present or closed!!")
-                continue
-            # ADD a new bid to existing parking
-            auctions[action.item].add_bid(action)
+    # Park vehicles
+    motorcycle = Vehicle(VehicleType.MOTORCYCLE_SCOOTER, "ABC123")
+    car = Vehicle(VehicleType.CAR_SUV, "XYZ789")
+    truck = Vehicle(VehicleType.BUS_TRUCK, "JKL456")
 
-        # Check if it's time to close the parking
-        # This will include checks on HeartBeats as well
-        for key, auction in auctions.items():
-            if not auction.listing_closed:
-                auction.check_time(action.timestamp)
+    motorcycle_ticket = parking_lot.park_vehicle(motorcycle, datetime.now())
+    car_ticket = parking_lot.park_vehicle(car, datetime.now())
+    truck_ticket = parking_lot.park_vehicle(truck, datetime.now())
+
+    if motorcycle_ticket:
+        print(
+            f"Motorcycle ticket: {motorcycle_ticket.ticket_number}, "
+            f"spot: {motorcycle_ticket.spot_number}"
+        )
+        motorcycle_receipt = parking_lot.unpark_vehicle(
+            motorcycle_ticket.ticket_number, datetime.now() + timedelta(hours=3, minutes=30)
+        )
+        print(f"Motorcycle fees: {motorcycle_receipt.fees_paid}")
+
+    if car_ticket:
+        print(f"Car ticket: {car_ticket.ticket_number}, spot: {car_ticket.spot_number}")
+        car_receipt = parking_lot.unpark_vehicle(
+            car_ticket.ticket_number, datetime.now() + timedelta(hours=6, minutes=1)
+        )
+        print(f"Car fees: {car_receipt.fees_paid}")
+
+    if truck_ticket:
+        print(f"Truck ticket: {truck_ticket.ticket_number}, spot: {truck_ticket.spot_number}")
+        truck_receipt = parking_lot.unpark_vehicle(
+            truck_ticket.ticket_number, datetime.now() + timedelta(hours=1, minutes=59)
+        )
+        print(f"Truck fees: {truck_receipt.fees_paid}")
 
 
 if __name__ == "__main__":
-    # process_auctions("input.txt")  # <- left for debugging purposes
-    process_auctions(sys.argv[1])
+    main()

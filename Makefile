@@ -18,4 +18,4 @@ tests:
 FILE_PATH ?= $(shell realpath input.txt)
 
 run: install
-	poetry run python -m parking $(FILE_PATH)
+	poetry run python -m parking
