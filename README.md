@@ -1,15 +1,14 @@
-Auction Demo
-=========
+Parking Lot Problem
+===================
 
 Overview
 --------
-A lightweight python script to demo basic functions of an auction service.
+A lightweight python script to demo basic functions of a parking lot service.
 
 Assumptions
-------------------------
+-----------
 
-* If the input file does not contain any timestamp >= auction closing time, 
-the auction will stay open and nothing will be printed to standard output for that given auction
+* ....
 
 Setup
 -----
@@ -25,8 +24,9 @@ How to:
 Development Requirements
 ------------------------
 
-* [Python 3.10.0 or higher](https://www.python.org/downloads/release/python-3100/) Just for compatibility reasons make sure you have the right version of python installed, or use [pyenv](https://github.com/pyenv/pyenv)
-to emulate the right python version
+* [Pyenv](https://github.com/pyenv/pyenv) if you want to emulate different versions of python instead of overriding the installed python on your machine
+* [Python 3.11.0 or higher](https://www.python.org/downloads/release/python-3100/) Just for compatibility reasons make sure you have the right version of python installed
+* [Poetry](https://python-poetry.org/) as a package dependency management solution
 
 Troubleshooting
 ---------------
@@ -34,7 +34,7 @@ Troubleshooting
 * If you get an error like this after installing pyenv and pointing to the right python version:
 ```bash
 make: *** [lint] Error 1
-(base) basha@Ahmeds-iMac parking % ./bin/run-black.sh
+(base) basha@Ahmeds-iMac park-it % ./bin/run-black.sh
 
 Current Python version (3.9.12) is not allowed by the project (^3.11).
 Please change python executable via the "env use" command.
