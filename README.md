@@ -20,6 +20,7 @@ How to:
 * `make tests`: runs the unit tests
 * `make run`: runs the script with a default input file path parameter, feel free to override using;
   - `FILE_PATH=/path/to/some/input/file.txt make run`
+  - :warning: Make sure to run `poetry config virtualenvs.in-project true` prior, so the virtual env lives within the project directory
 
 Development Requirements
 ------------------------
