@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "parking-lot-demo"
+version = "0.1"
+description = "Answering to the masses"
+authors = ["hamada969"]
+
+packages = [
+    { include = "parking", from="src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+black = "^22.6.0"
+mypy = "^0.981"
+flake8 = "^3.9.2"
+
+[tool.black]
+line-length = 99
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
