@@ -5,21 +5,16 @@ from parking.domain_types import (
     VehicleType,
     FeeInterval,
     Vehicle,
-    ParkingLot,
+    ParkingLot, MallFeeModel,
 )
-
-
-def create_fee_models() -> Dict[VehicleType, List[FeeInterval]]:
-    mall_fee_intervals = {
-        VehicleType.MOTORCYCLE_SCOOTER: [FeeInterval(0, 1, 10), FeeInterval(1, 24, 10)],
-        VehicleType.CAR_SUV: [FeeInterval(0, 1, 20), FeeInterval(1, 24, 20)],
-        VehicleType.BUS_TRUCK: [FeeInterval(0, 1, 50), FeeInterval(1, 24, 50)],
-    }
-    return mall_fee_intervals
-
 
 def main() -> None:
     # Create parking lot
+
+    motorcycle_fee_model = MallFeeModel(VehicleType.motorcycle)
+    spots = {SpotType.motorcycle: 2}
+    parking_lot_1 = ParkingLot("Small Motorcycle/Scooter Parking Lot", spots, motorcycle_fee_model)
+
     spots = {
         VehicleType.MOTORCYCLE_SCOOTER: 100,
         VehicleType.CAR_SUV: 80,
@@ -29,9 +24,9 @@ def main() -> None:
     parking_lot = ParkingLot(spots, fee_model)
 
     # Park vehicles
-    motorcycle = Vehicle(VehicleType.MOTORCYCLE_SCOOTER, "ABC123")
-    car = Vehicle(VehicleType.CAR_SUV, "XYZ789")
-    truck = Vehicle(VehicleType.BUS_TRUCK, "JKL456")
+    motorcycle = Vehicle(VehicleType.MOTORCYCLE_SCOOTER)
+    car = Vehicle(VehicleType.CAR_SUV)
+    truck = Vehicle(VehicleType.BUS_TRUCK)
 
     motorcycle_ticket = parking_lot.park_vehicle(motorcycle, datetime.now())
     car_ticket = parking_lot.park_vehicle(car, datetime.now())
