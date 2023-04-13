@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from parking.models.parking_lot import ParkingLot
-from parking.models.vehicle import VehicleType, Vehicle
+from parking.models.vehicle import VehicleType
 from parking.models.fees import MallFeeModel, StadiumFeeModel, AirportFeeModel
 
 
@@ -14,22 +14,20 @@ def run_example_one() -> None:
 
     # Action 1
     ticket_one = scooter_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER),
+        vehicle_type=VehicleType.MOTORCYCLE_SCOOTER,
         fake_entry_time=datetime(2022, 5, 29, 14, 4, 7),
     )
     print(ticket_one)
 
     # Action 2
     ticket_two = scooter_parking_lot.park_vehicle(
-        Vehicle(model="Scooter", type=VehicleType.MOTORCYCLE_SCOOTER),
+        vehicle_type=VehicleType.MOTORCYCLE_SCOOTER,
         fake_entry_time=datetime(2022, 5, 29, 14, 44, 7),
     )
     print(ticket_two)
 
     # Action 3
-    ticket_three = scooter_parking_lot.park_vehicle(
-        Vehicle(model="Scooter", type=VehicleType.MOTORCYCLE_SCOOTER)
-    )
+    ticket_three = scooter_parking_lot.park_vehicle(vehicle_type=VehicleType.MOTORCYCLE_SCOOTER)
     print(ticket_three)
 
     # Action 4
@@ -40,7 +38,7 @@ def run_example_one() -> None:
 
     # Action 5
     ticket_four = scooter_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER),
+        vehicle_type=VehicleType.MOTORCYCLE_SCOOTER,
         fake_entry_time=datetime(2022, 5, 29, 15, 59, 7),
     )
     print(ticket_four)
@@ -69,9 +67,7 @@ def run_example_two() -> None:
     print(mall_parking_lot.name)
 
     # Action 1
-    ticket_one = mall_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER)
-    )
+    ticket_one = mall_parking_lot.park_vehicle(vehicle_type=VehicleType.MOTORCYCLE_SCOOTER)
     receipt_one = mall_parking_lot.unpark_vehicle(
         ticket_number=ticket_one.ticket_number, fake_duration=12600
     )
@@ -79,7 +75,7 @@ def run_example_two() -> None:
     print(receipt_one)
 
     # Action 2
-    ticket_two = mall_parking_lot.park_vehicle(Vehicle(model="Car", type=VehicleType.CAR_SUV))
+    ticket_two = mall_parking_lot.park_vehicle(vehicle_type=VehicleType.CAR_SUV)
     receipt_two = mall_parking_lot.unpark_vehicle(
         ticket_number=ticket_two.ticket_number, fake_duration=21660
     )
@@ -87,9 +83,7 @@ def run_example_two() -> None:
     print(receipt_two)
 
     # Action 3
-    ticket_three = mall_parking_lot.park_vehicle(
-        Vehicle(model="Truck", type=VehicleType.BUS_TRUCK)
-    )
+    ticket_three = mall_parking_lot.park_vehicle(vehicle_type=VehicleType.BUS_TRUCK)
     receipt_three = mall_parking_lot.unpark_vehicle(
         ticket_number=ticket_three.ticket_number, fake_duration=7140
     )
@@ -110,9 +104,7 @@ def run_example_three() -> None:
     print(stadium_parking_lot.name)
 
     # Action 1
-    ticket_one = stadium_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER)
-    )
+    ticket_one = stadium_parking_lot.park_vehicle(vehicle_type=VehicleType.MOTORCYCLE_SCOOTER)
     receipt_one = stadium_parking_lot.unpark_vehicle(
         ticket_number=ticket_one.ticket_number, fake_duration=13200  # 3 hour 40 min
     )
@@ -120,9 +112,7 @@ def run_example_three() -> None:
     print(receipt_one)
 
     # Action 2
-    ticket_two = stadium_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER)
-    )
+    ticket_two = stadium_parking_lot.park_vehicle(vehicle_type=VehicleType.MOTORCYCLE_SCOOTER)
     receipt_two = stadium_parking_lot.unpark_vehicle(
         ticket_number=ticket_two.ticket_number, fake_duration=53940  # 14 hour 59 min
     )
@@ -130,7 +120,7 @@ def run_example_three() -> None:
     print(receipt_two)
 
     # Action 3
-    ticket_three = stadium_parking_lot.park_vehicle(Vehicle(model="SUV", type=VehicleType.CAR_SUV))
+    ticket_three = stadium_parking_lot.park_vehicle(vehicle_type=VehicleType.CAR_SUV)
     receipt_three = stadium_parking_lot.unpark_vehicle(
         ticket_number=ticket_three.ticket_number, fake_duration=41400  # 11 hour 30 min
     )
@@ -138,7 +128,7 @@ def run_example_three() -> None:
     print(receipt_three)
 
     # Action 4
-    ticket_four = stadium_parking_lot.park_vehicle(Vehicle(model="SUV", type=VehicleType.CAR_SUV))
+    ticket_four = stadium_parking_lot.park_vehicle(vehicle_type=VehicleType.CAR_SUV)
     receipt_four = stadium_parking_lot.unpark_vehicle(
         ticket_number=ticket_four.ticket_number, fake_duration=47100  # 13 hour 5 min
     )
@@ -165,9 +155,7 @@ def run_example_four() -> None:
     print(airport_parking_lot.name)
 
     # Action 1
-    ticket_one = airport_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER)
-    )
+    ticket_one = airport_parking_lot.park_vehicle(vehicle_type=VehicleType.MOTORCYCLE_SCOOTER)
     receipt_one = airport_parking_lot.unpark_vehicle(
         ticket_number=ticket_one.ticket_number, fake_duration=3300  # 55 min
     )
@@ -175,9 +163,7 @@ def run_example_four() -> None:
     print(receipt_one)
 
     # Action 2
-    ticket_two = airport_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER)
-    )
+    ticket_two = airport_parking_lot.park_vehicle(vehicle_type=VehicleType.MOTORCYCLE_SCOOTER)
     receipt_two = airport_parking_lot.unpark_vehicle(
         ticket_number=ticket_two.ticket_number, fake_duration=53940  # 14 hour 59 min
     )
@@ -185,9 +171,7 @@ def run_example_four() -> None:
     print(receipt_two)
 
     # Action 3
-    ticket_three = airport_parking_lot.park_vehicle(
-        Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER)
-    )
+    ticket_three = airport_parking_lot.park_vehicle(vehicle_type=VehicleType.MOTORCYCLE_SCOOTER)
     receipt_three = airport_parking_lot.unpark_vehicle(
         ticket_number=ticket_three.ticket_number, fake_duration=129600  # 1 day 12 hours
     )
@@ -195,7 +179,7 @@ def run_example_four() -> None:
     print(receipt_three)
 
     # Action 4
-    ticket_four = airport_parking_lot.park_vehicle(Vehicle(model="Car", type=VehicleType.CAR_SUV))
+    ticket_four = airport_parking_lot.park_vehicle(vehicle_type=VehicleType.CAR_SUV)
     receipt_four = airport_parking_lot.unpark_vehicle(
         ticket_number=ticket_four.ticket_number, fake_duration=3000  # 50 min
     )
@@ -203,7 +187,7 @@ def run_example_four() -> None:
     print(receipt_four)
 
     # Action 5
-    ticket_five = airport_parking_lot.park_vehicle(Vehicle(model="SUV", type=VehicleType.CAR_SUV))
+    ticket_five = airport_parking_lot.park_vehicle(vehicle_type=VehicleType.CAR_SUV)
     receipt_five = airport_parking_lot.unpark_vehicle(
         ticket_number=ticket_five.ticket_number, fake_duration=86340  # 23 hours 59 min
     )
@@ -211,7 +195,7 @@ def run_example_four() -> None:
     print(receipt_five)
 
     # Action 6
-    ticket_six = airport_parking_lot.park_vehicle(Vehicle(model="Car", type=VehicleType.CAR_SUV))
+    ticket_six = airport_parking_lot.park_vehicle(vehicle_type=VehicleType.CAR_SUV)
     receipt_six = airport_parking_lot.unpark_vehicle(
         ticket_number=ticket_six.ticket_number, fake_duration=262800  # 3 days 1 hour
     )
