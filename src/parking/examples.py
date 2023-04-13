@@ -1,13 +1,8 @@
 from datetime import datetime
 
-from parking.domain_types import (
-    VehicleType,
-    MallFeeModel,
-    ParkingLot,
-    Vehicle,
-    StadiumFeeModel,
-    AirportFeeModel,
-)
+from parking.models.parking_lot import ParkingLot
+from parking.models.vehicle import VehicleType, Vehicle
+from parking.models.fees import MallFeeModel, StadiumFeeModel, AirportFeeModel
 
 
 def run_example_one() -> None:
@@ -167,6 +162,7 @@ def run_example_four() -> None:
     }
 
     airport_parking_lot = ParkingLot("Airport Parking Lot", spots, fee_models)
+    print(airport_parking_lot.name)
 
     # Action 1
     ticket_one = airport_parking_lot.park_vehicle(
