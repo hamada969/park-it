@@ -8,7 +8,16 @@ A lightweight python script to demo basic functions of a parking lot service.
 Assumptions
 -----------
 
-* ....
+* Parking spots are assigned sequentially: The implementation assumes that parking spots are assigned sequentially, 
+i.e., the lowest available spot number is assigned to an incoming vehicle. This simplifies the process of finding 
+an available parking spot.
+* Parking tickets are unique and sequential: The Ticket class assumes that ticket numbers are unique and assigned 
+sequentially. This simplifies the process of tracking parked vehicles and their corresponding tickets.
+* Fee models are pre-defined: The implementation assumes that fee models are pre-defined for each parking lot, 
+and the applicable fees can be calculated based on these models.
+* The parking duration is always positive: The implementation assumes that the parking duration is always positive, 
+i.e., a vehicle cannot be unparked before it was parked. This means that the implementation doesn't handle cases where 
+the entry and exit timestamps are invalid or reversed.
 
 Setup
 -----
@@ -26,7 +35,7 @@ Development Requirements
 ------------------------
 
 * [Pyenv](https://github.com/pyenv/pyenv) if you want to emulate different versions of python instead of overriding the installed python on your machine
-* [Python 3.11.0 or higher](https://www.python.org/downloads/release/python-3100/) Just for compatibility reasons make sure you have the right version of python installed
+* [Python 3.10.0 or higher](https://www.python.org/downloads/release/python-3100/) Just for compatibility reasons make sure you have the right version of python installed
 * [Poetry](https://python-poetry.org/) as a package dependency management solution
 
 Troubleshooting
@@ -37,13 +46,14 @@ Troubleshooting
 make: *** [lint] Error 1
 (base) basha@Ahmeds-iMac park-it % ./bin/run-black.sh
 
-Current Python version (3.9.12) is not allowed by the project (^3.11).
+Current Python version (3.9.12) is not allowed by the project (^3.10).
 Please change python executable via the "env use" command.
 ```
 Then try running these commands in the root:
 ```bash
 $ rm -rf .venv
-$ poetry env use 3.11.0
-$ poetry install
+$ pyenv local 3.10.0
+$ poetry env use 3.10.0
+$ make install
 ```
 This forces poetry to look at the pyenv version instead

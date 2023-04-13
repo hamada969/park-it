@@ -14,8 +14,5 @@ lint:
 tests:
 	poetry run pytest
 
-# path to the input test file.  can be overriden.
-FILE_PATH ?= $(shell realpath input.txt)
-
 run: install
 	poetry run python -m parking

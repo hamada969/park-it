@@ -1,9 +1,13 @@
 import math
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Tuple, Text
+from typing import Dict, Optional, Tuple, Text, Union
+
+SEC_PER_HR: int = 3600
+DATE_FORMAT: Text = "%d-%b-%Y %H:%M:%S"
+Error = Text
 
 
 class VehicleType(Enum):
@@ -21,6 +25,7 @@ class FeeInterval:
 
 @dataclass
 class Vehicle:
+    model: Text
     type: VehicleType
 
 
@@ -29,85 +34,92 @@ class Ticket:
     ticket_number: int
     vehicle_type: VehicleType
     entry_datetime: datetime
+    spot_number: int
+
+    def __str__(self) -> Text:
+        return (
+            f"Parking Ticket:\n\tTicket Number: {'{0:03}'.format(self.ticket_number)}\n"
+            f"\tSpot Number: {self.spot_number}\n"
+            f"\tEntry Date-time: {self.entry_datetime.strftime(DATE_FORMAT)}"
+        )
 
 
 @dataclass
 class Receipt:
     receipt_number: int
     ticket: Ticket
+    entry_datetime: datetime
     exit_datetime: datetime
     fees_paid: float
 
     def __str__(self) -> Text:
         return (
-            f"ParkingReceipt(receipt_number={self.receipt_number}, "
-            f"ticket={self.ticket}, exit_datetime={self.exit_datetime}, "
-            f"fees_paid={self.fees_paid})"
+            f"Parking Receipt:\n\tReceipt Number: R-{'{0:03}'.format(self.receipt_number)}\n"
+            f"\tEntry Date-time: {self.entry_datetime.strftime(DATE_FORMAT)}\n"
+            f"\tExit Date-time: {self.exit_datetime.strftime(DATE_FORMAT)}\n"
+            f"\tFees: {self.fees_paid}"
         )
 
 
 class FeeModel(ABC):
     @abstractmethod
-    def calculate_fee(self, vehicle_type: VehicleType, duration: int) -> int:
+    def calculate_fee(self, vehicle_type: VehicleType, duration: float) -> int:
         pass
 
 
 class MallFeeModel(FeeModel):
-    def calculate_fee(self, vehicle_type: VehicleType, duration: int) -> int:
-        fees = {"motorcycle": 10, "car": 20, "bus": 50}
-        return fees[vehicle_type.name] * duration
+    def calculate_fee(self, vehicle_type: VehicleType, duration: float) -> int:
+        fees = {
+            VehicleType.MOTORCYCLE_SCOOTER: 10,
+            VehicleType.CAR_SUV: 20,
+            VehicleType.BUS_TRUCK: 50,
+        }
+        return fees[vehicle_type] * math.ceil(duration)
 
 
-class CustomFeeModel(FeeModel):
-    def __init__(self, fee_intervals: List[Tuple[Optional[int], int]]):
-        self.fee_intervals = fee_intervals
+class StadiumFeeModel(FeeModel):
+    def calculate_fee(self, vehicle_type: VehicleType, duration: float) -> int:
+        if vehicle_type == VehicleType.MOTORCYCLE_SCOOTER:
+            intervals = [(0, 4, 30), (4, 12, 60)]
+            per_hour_fee = 100
+        elif vehicle_type == VehicleType.CAR_SUV:
+            intervals = [(0, 4, 60), (4, 12, 120)]
+            per_hour_fee = 200
+        else:
+            raise ValueError("Unsupported vehicle type for StadiumFeeModel")
 
-    def calculate_fee(self, vehicle_type: VehicleType, duration: int) -> int:
         total_fee = 0
-        for interval_end, fee in self.fee_intervals:
-            if interval_end is None or duration < interval_end:
-                total_fee += fee * duration
-                break
-            else:
-                total_fee += fee * (
-                    interval_end  # type: ignore
-                    - (0 if interval_end == self.fee_intervals[0][0] else self.fee_intervals[0][0])
-                )
-                duration -= interval_end
-        return total_fee
+        hours_passed = 0
+        for start, end, fee in intervals:
+            if start <= hours_passed < end and hours_passed < duration:
+                total_fee += fee
+            hours_passed += end - start
+
+        charge_past_twelve = 0
+        if duration - hours_passed > 0:
+            charge_past_twelve = (math.ceil(duration) - hours_passed) * per_hour_fee
+
+        return total_fee + charge_past_twelve
 
 
-class StadiumFeeModel(CustomFeeModel):
-    def __init__(self, vehicle_type: VehicleType):
+class AirportFeeModel(FeeModel):
+    def calculate_fee(self, vehicle_type: VehicleType, duration: float) -> int:
         if vehicle_type == VehicleType.MOTORCYCLE_SCOOTER:
-            fee_intervals = [(4, 30), (12, 60), (None, 100)]  # None indicates infinity
+            intervals = [(0, 1, 0), (1, 8, 40), (8, 24, 60)]
+            per_day_fee = 80
         elif vehicle_type == VehicleType.CAR_SUV:
-            fee_intervals = [(4, 60), (12, 120), (None, 200)]  # None indicates infinity
+            intervals = [(0, 12, 60), (12, 24, 80)]
+            per_day_fee = 100
         else:
-            raise ValueError("Invalid vehicle type for StadiumFeeModel")
+            raise ValueError("Unsupported vehicle type for AirportFeeModel")
 
-        super().__init__(fee_intervals)
+        if duration < 24:
+            for start, end, fee in intervals:
+                if start <= duration < end:
+                    return fee
 
-
-class AirportFeeModel(CustomFeeModel):
-    def __init__(self, vehicle_type: VehicleType) -> None:
-        if vehicle_type == VehicleType.MOTORCYCLE_SCOOTER:
-            fee_intervals = [
-                (1, 0),
-                (8, 40),
-                (24, 60),
-                (None, 80),  # None indicates per day after 24 hours
-            ]
-        elif vehicle_type == VehicleType.CAR_SUV:
-            fee_intervals = [
-                (12, 60),
-                (24, 80),
-                (None, 100),  # None indicates per day after 24 hours
-            ]
-        else:
-            raise ValueError("Invalid vehicle type for AirportFeeModel")
-
-        super().__init__(fee_intervals)
+        total_days = math.ceil(duration / 24)
+        return total_days * per_day_fee
 
 
 class ParkingLot:
@@ -122,17 +134,24 @@ class ParkingLot:
         self.ticket_counter = 1
         self.receipt_counter = 1
 
-    def park_vehicle(self, vehicle: Vehicle) -> Optional[Ticket]:
+    def park_vehicle(
+        self, vehicle: Vehicle, entry_time: Optional[datetime] = None
+    ) -> Union[Ticket, Error]:
         if self.occupied_spots[vehicle.type] < self.spots[vehicle.type]:
             self.occupied_spots[vehicle.type] += 1
-            ticket = Ticket(self.ticket_counter, vehicle.type, datetime.now())
+            spot_number = self.occupied_spots[vehicle.type]
+            ticket = Ticket(
+                self.ticket_counter, vehicle.type, entry_time or datetime.now(), spot_number
+            )
             self.vehicle_records[self.ticket_counter] = (vehicle, ticket)
             self.ticket_counter += 1
             return ticket
         else:
-            return None
+            return "No space available"
 
-    def unpark_vehicle(self, ticket_number: int) -> Optional[Receipt]:
+    def unpark_vehicle(
+        self, ticket_number: int, fake_duration: Optional[int] = None
+    ) -> Optional[Receipt]:
         if ticket_number not in self.vehicle_records:
             return None
 
@@ -141,9 +160,21 @@ class ParkingLot:
 
         self.occupied_spots[vehicle.type] -= 1
 
-        duration = int((datetime.now() - ticket.entry_datetime).total_seconds() / 3600)
-        fees_paid = self.fee_models[vehicle.type].calculate_fee(vehicle.type, math.ceil(duration))
+        duration = (
+            fake_duration or (datetime.now() - ticket.entry_datetime).total_seconds()
+        ) / SEC_PER_HR
 
-        receipt = Receipt(self.receipt_counter, ticket, datetime.now(), fees_paid)
+        fees_paid = self.fee_models[vehicle.type].calculate_fee(vehicle.type, duration)
+
+        receipt = Receipt(
+            receipt_number=self.receipt_counter,
+            ticket=ticket,
+            entry_datetime=ticket.entry_datetime,
+            exit_datetime=ticket.entry_datetime + timedelta(seconds=fake_duration)
+            if fake_duration
+            else datetime.now(),
+            fees_paid=fees_paid,
+        )
+
         self.receipt_counter += 1
         return receipt
