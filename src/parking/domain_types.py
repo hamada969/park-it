@@ -135,13 +135,13 @@ class ParkingLot:
         self.receipt_counter = 1
 
     def park_vehicle(
-        self, vehicle: Vehicle, entry_time: Optional[datetime] = None
+        self, vehicle: Vehicle, fake_entry_time: Optional[datetime] = None
     ) -> Union[Ticket, Error]:
         if self.occupied_spots[vehicle.type] < self.spots[vehicle.type]:
             self.occupied_spots[vehicle.type] += 1
             spot_number = self.occupied_spots[vehicle.type]
             ticket = Ticket(
-                self.ticket_counter, vehicle.type, entry_time or datetime.now(), spot_number
+                self.ticket_counter, vehicle.type, fake_entry_time or datetime.now(), spot_number
             )
             self.vehicle_records[self.ticket_counter] = (vehicle, ticket)
             self.ticket_counter += 1

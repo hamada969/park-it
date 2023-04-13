@@ -20,14 +20,14 @@ def run_example_one() -> None:
     # Action 1
     ticket_one = scooter_parking_lot.park_vehicle(
         Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER),
-        entry_time=datetime(2022, 5, 29, 14, 4, 7),
+        fake_entry_time=datetime(2022, 5, 29, 14, 4, 7),
     )
     print(ticket_one)
 
     # Action 2
     ticket_two = scooter_parking_lot.park_vehicle(
         Vehicle(model="Scooter", type=VehicleType.MOTORCYCLE_SCOOTER),
-        entry_time=datetime(2022, 5, 29, 14, 44, 7),
+        fake_entry_time=datetime(2022, 5, 29, 14, 44, 7),
     )
     print(ticket_two)
 
@@ -46,7 +46,7 @@ def run_example_one() -> None:
     # Action 5
     ticket_four = scooter_parking_lot.park_vehicle(
         Vehicle(model="Motorcycle", type=VehicleType.MOTORCYCLE_SCOOTER),
-        entry_time=datetime(2022, 5, 29, 15, 59, 7),
+        fake_entry_time=datetime(2022, 5, 29, 15, 59, 7),
     )
     print(ticket_four)
 
