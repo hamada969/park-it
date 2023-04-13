@@ -1,6 +1,11 @@
+from datetime import datetime
+
 import pytest
 
 from parking.examples import run_example_one, run_example_two, run_example_three, run_example_four
+from parking.models.fees import MallFeeModel, StadiumFeeModel, AirportFeeModel
+from parking.models.slips import Ticket, Receipt
+from parking.models.vehicle import VehicleType
 
 
 # This is the base case for the Thought Machine test
@@ -157,3 +162,73 @@ def test_base_case_example_four(capsys):
     assert "Fees: 60" in captured.out
     assert "Fees: 80" in captured.out
     assert "Fees: 400" in captured.out
+
+
+def test_assigning_ticket_attributes_prints_as_expected():
+    t = Ticket(ticket_number=1, spot_number=1, entry_datetime=datetime(2022, 5, 29, 14, 4, 7))
+    assert str(t) == (
+        f"Parking Ticket:\n\tTicket Number: 001\n"
+        f"\tSpot Number: 1\n"
+        f"\tEntry Date-time: 29-May-2022 14:04:07"
+    )
+
+
+def test_assigning_receipt_attributes_prints_as_expected():
+    r = Receipt(
+        receipt_number=2,
+        entry_datetime=datetime(2022, 5, 29, 14, 4, 7),
+        exit_datetime=datetime(2022, 5, 29, 16, 4, 7),
+        fees_paid=5,
+    )
+    assert str(r) == (
+        f"Parking Receipt:\n\tReceipt Number: R-002\n"
+        f"\tEntry Date-time: 29-May-2022 14:04:07\n"
+        f"\tExit Date-time: 29-May-2022 16:04:07\n"
+        f"\tFees: 5"
+    )
+
+
+mall_test_data = [(1, 20), (2, 40), (3, 60), (4, 80)]
+
+
+@pytest.mark.parametrize("duration, expected_fees", mall_test_data)
+def test_mall_fee_model_returns_flat_fee(duration, expected_fees):
+    mall_fee_model = MallFeeModel()
+    fees_paid = mall_fee_model.calculate_fees(
+        vehicle_type=VehicleType.CAR_SUV, duration_in_hours=duration
+    )
+    assert fees_paid == expected_fees
+
+
+stadium_test_data = [
+    (3, 60),
+    (4, 180),
+    # 60 for 4 hours, 120 for next 8, then 3 * 200
+    (15, 780),
+]
+
+
+@pytest.mark.parametrize("duration, expected_fees", stadium_test_data)
+def test_stadium_fee_model_returns_flat_fee_then_per_hour(duration, expected_fees):
+    stadium_fee_model = StadiumFeeModel()
+    fees_paid = stadium_fee_model.calculate_fees(
+        vehicle_type=VehicleType.CAR_SUV, duration_in_hours=duration
+    )
+    assert fees_paid == expected_fees
+
+
+airport_test_data = [
+    (7, 60),
+    (18, 80),
+    # 38 hours, calculated at a ceiling of 2 days, so 100*2
+    (38, 200),
+]
+
+
+@pytest.mark.parametrize("duration, expected_fees", airport_test_data)
+def test_airport_fee_model_returns_flat_fee_one_day_then_per_day(duration, expected_fees):
+    airport_fee_model = AirportFeeModel()
+    fees_paid = airport_fee_model.calculate_fees(
+        vehicle_type=VehicleType.CAR_SUV, duration_in_hours=duration
+    )
+    assert fees_paid == expected_fees
