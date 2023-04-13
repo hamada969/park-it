@@ -4,11 +4,9 @@ import pytest
 
 from parking.examples import run_example_one, run_example_two, run_example_three, run_example_four
 from parking.models.fees import MallFeeModel, StadiumFeeModel, AirportFeeModel
+from parking.models.parking_lot import ParkingLot
 from parking.models.slips import Ticket, Receipt
 from parking.models.vehicle import VehicleType
-
-
-# This is the base case for the Thought Machine test
 
 
 def test_base_case_example_one(capsys):
@@ -232,3 +230,61 @@ def test_airport_fee_model_returns_flat_fee_one_day_then_per_day(duration, expec
         vehicle_type=VehicleType.CAR_SUV, duration_in_hours=duration
     )
     assert fees_paid == expected_fees
+
+
+def test_parking_lot_park_a_bus_inside_airport_returns_a_valid_ticket():
+    parking_lot = ParkingLot(
+        name="Airport Parking Lot",
+        spots={VehicleType.BUS_TRUCK: 4},
+        fee_models={VehicleType.BUS_TRUCK: AirportFeeModel()},
+    )
+    ticket = parking_lot.park_vehicle(
+        vehicle_type=VehicleType.BUS_TRUCK, fake_entry_time=datetime(2022, 5, 29, 14, 4, 7)
+    )
+    assert str(ticket) == (
+        f"Parking Ticket:\n\tTicket Number: 001\n"
+        f"\tSpot Number: 1\n"
+        f"\tEntry Date-time: 29-May-2022 14:04:07"
+    )
+
+
+def test_parking_lot_unpark_a_car_from_mall_returns_a_valid_receipt():
+    parking_lot = ParkingLot(
+        name="Mall Parking Lot",
+        spots={VehicleType.CAR_SUV: 1},
+        fee_models={VehicleType.CAR_SUV: MallFeeModel()},
+    )
+    ticket = parking_lot.park_vehicle(
+        vehicle_type=VehicleType.CAR_SUV, fake_entry_time=datetime(2022, 5, 29, 14, 4, 7)
+    )
+
+    receipt = parking_lot.unpark_vehicle(ticket.ticket_number, fake_duration=3600)
+
+    assert str(receipt) == (
+        f"Parking Receipt:\n\tReceipt Number: R-001\n"
+        f"\tEntry Date-time: 29-May-2022 14:04:07\n"
+        f"\tExit Date-time: 29-May-2022 15:04:07\n"
+        f"\tFees: 20"
+    )
+
+
+def test_parking_lot_parking_with_invalid_vehicle_type_fails():
+    parking_lot = ParkingLot(
+        name="Sample Parking Lot",
+        spots={VehicleType.CAR_SUV: 1},
+        fee_models={VehicleType.CAR_SUV: MallFeeModel()},
+    )
+    with pytest.raises(ValueError, match="Vehicle type passed is not recognised"):
+        parking_lot.park_vehicle(vehicle_type=1)
+
+
+def test_parking_lot_unparking_with_invalid_ticket_number_fails():
+    parking_lot = ParkingLot(
+        name="Another Sample Parking Lot",
+        spots={VehicleType.CAR_SUV: 1},
+        fee_models={VehicleType.CAR_SUV: MallFeeModel()},
+    )
+    with pytest.raises(
+        ValueError, match="Ticket 15 has not been commissioned by this parking lot"
+    ):
+        parking_lot.unpark_vehicle(ticket_number=15)
